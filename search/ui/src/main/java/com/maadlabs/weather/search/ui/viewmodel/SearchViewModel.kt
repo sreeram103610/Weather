@@ -5,7 +5,6 @@ import android.app.Application
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.maadlabs.weather.search.domain.domain.WeatherDomainData
 import com.maadlabs.weather.search.domain.domain.WeatherDomainResult
@@ -14,9 +13,7 @@ import com.maadlabs.weather.search.ui.model.SearchViewState
 import com.maadlabs.weather.search.ui.model.UserEvent
 import com.maadlabs.weather.search.ui.model.WeatherScreenData
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -39,27 +36,25 @@ class SearchViewModel @Inject constructor(
             weatherInteractor.getDefaultWeather()
         }
         .map {
-        when (it) {
-            WeatherDomainResult.Default -> SearchViewState.Default
-            is WeatherDomainResult.Error -> SearchViewState.Error
-            WeatherDomainResult.Loading -> SearchViewState.Loading
-            is WeatherDomainResult.RefreshedWeatherData -> SearchViewState.Loaded(it.weatherData.toScreenData())
-            is WeatherDomainResult.WeatherData -> SearchViewState.Loaded(it.weatherData.toScreenData())
-            is WeatherDomainResult.WeatherDataForLocation -> SearchViewState.Loaded(it.weatherData.toScreenData())
-        }
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(),
-        initialValue = SearchViewState.Default
-    )
+            when (it) {
+                WeatherDomainResult.Default -> SearchViewState.Default
+                is WeatherDomainResult.Error -> SearchViewState.Error
+                WeatherDomainResult.Loading -> SearchViewState.Loading
+                is WeatherDomainResult.RefreshedWeatherData -> SearchViewState.Loaded(it.weatherData.toScreenData())
+                is WeatherDomainResult.WeatherData -> SearchViewState.Loaded(it.weatherData.toScreenData())
+                is WeatherDomainResult.WeatherDataForLocation -> SearchViewState.Loaded(it.weatherData.toScreenData())
+            }
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(),
+            initialValue = SearchViewState.Default
+        )
 
     fun userEventsCallback(event: UserEvent) {
         when (event) {
-            UserEvent.LocationSearch -> if(isLocationPermissionGranted())
-            {
+            UserEvent.LocationSearch -> if (isLocationPermissionGranted()) {
                 weatherInteractor.getCurrentLocationWeather()
-            }
-            else {
+            } else {
                 _actions.tryEmit(Actions.CheckLocationPermission)
             }
             UserEvent.Refresh -> weatherInteractor.refreshWeather()
@@ -72,19 +67,18 @@ class SearchViewModel @Inject constructor(
     }
 
     override fun onFailure() {
-
     }
 
     fun isLocationPermissionGranted(): Boolean {
         val context = getApplication<Application>().applicationContext
-        return !(ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+        return !(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_DENIED ||
+                ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
                 == PackageManager.PERMISSION_DENIED
-                || ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
-                == PackageManager.PERMISSION_DENIED)
+            )
     }
-
 }
-
 
 private fun WeatherDomainData.toScreenData(): WeatherScreenData = WeatherScreenData(
     cityName = city,
@@ -102,4 +96,3 @@ interface LocationPermission {
     fun onSuccess()
     fun onFailure()
 }
-

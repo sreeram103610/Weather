@@ -7,16 +7,15 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStoreFile
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.common.truth.Truth.*
+import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mockito.*
 import org.mockito.MockitoAnnotations
 
-@RunWith(AndroidJUnit4::class)  // TODO
+@RunWith(AndroidJUnit4::class) // TODO
 class DefaultSearchRepositoryTest {
     private lateinit var repository: DefaultSearchRepository
     private val testContext: Context = ApplicationProvider.getApplicationContext()

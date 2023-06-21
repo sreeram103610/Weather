@@ -37,14 +37,13 @@ import java.io.File
 import javax.inject.Named
 import javax.inject.Singleton
 
-
 @Module
 @InstallIn(SingletonComponent::class)
 internal object DataModule {
 
     @Provides
     @Singleton
-    internal fun weatherRepo(weatherApi: WeatherApi) : WeatherRepository = DefaultWeatherRepository(weatherApi)
+    internal fun weatherRepo(weatherApi: WeatherApi): WeatherRepository = DefaultWeatherRepository(weatherApi)
 
     @Provides
     @Singleton
@@ -95,7 +94,6 @@ internal object DataModule {
     @Named("ApiInterceptor")
     internal fun apiInterceptorProvider() = object : Interceptor {
         override fun intercept(chain: Interceptor.Chain): Response {
-
             val original: Request = chain.request()
             val originalHttpUrl: HttpUrl = original.url
 
@@ -109,7 +107,6 @@ internal object DataModule {
             val request: Request = requestBuilder.build()
             return chain.proceed(request)
         }
-
     }
 
     @Provides
@@ -118,7 +115,7 @@ internal object DataModule {
     internal fun cacheInterceptorProvider(@ApplicationContext context: Context) = object : Interceptor {
         override fun intercept(chain: Interceptor.Chain): Response {
             val response = chain.proceed(chain.request())
-            if(Utils.isInternetAvailable(context)) {
+            if (Utils.isInternetAvailable(context)) {
                 val cacheDuration = 1 * 60 * 60
                 return response.newBuilder().header(
                     "Cache-Control",
@@ -141,5 +138,4 @@ internal object DataModule {
             produceFile = { appContext.preferencesDataStoreFile("settings") }
         )
     }
-
 }

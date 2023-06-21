@@ -21,5 +21,4 @@ internal interface WeatherApi {
     @GET(".")
     @Headers("Cache-Control: no-cache")
     suspend fun currentWeatherNoCache(@Query("lat") latitude: String, @Query("lon") longitude: String): DataResult<WeatherSourceData, ErrorResponse>
-
 }

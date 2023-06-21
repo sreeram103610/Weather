@@ -9,17 +9,18 @@ import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 internal interface GetWeatherForLocationUsecase {
-    operator fun invoke(location: LocationDomainData) : Flow<Result<WeatherDomainData>>
+    operator fun invoke(location: LocationDomainData): Flow<Result<WeatherDomainData>>
 }
 
-internal class DefaultGetWeatherForLocationUsecase @Inject constructor(val repository: WeatherRepository)
-    : GetWeatherForLocationUsecase {
+internal class DefaultGetWeatherForLocationUsecase @Inject constructor(val repository: WeatherRepository) :
+    GetWeatherForLocationUsecase {
     override fun invoke(location: LocationDomainData): Flow<Result<WeatherDomainData>> =
         flow {
-            emit(repository.getCurrentWeather(
-                false,
-                LocationRepoData(location.latitude, location.longitude)
-            ).toWeatherResult())
+            emit(
+                repository.getCurrentWeather(
+                    false,
+                    LocationRepoData(location.latitude, location.longitude)
+                ).toWeatherResult()
+            )
         }
-
 }

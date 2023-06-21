@@ -114,6 +114,7 @@ class WeatherApiTest {
             assertThat(res).isInstanceOf(DataResult.Error::class.java)
         }
     }
+
     @Test
     fun `weather json is parsed correctly`() = runTest {
         val jsonString = """

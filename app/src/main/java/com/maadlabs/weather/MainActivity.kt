@@ -24,6 +24,7 @@ class MainActivity : ComponentActivity() {
      *
      */
     val searchViewModel: SearchViewModel by viewModels()
+
     /**
      *
      */
@@ -41,12 +42,11 @@ class MainActivity : ComponentActivity() {
 
         lifecycleScope.launch {
             searchViewModel.actions.collect {
-                when(it) {
+                when (it) {
                     Actions.CheckLocationPermission -> startLocationPermissionRequest()
                 }
             }
         }
-
     }
 
     /**
@@ -55,21 +55,22 @@ class MainActivity : ComponentActivity() {
     val requestMultiplePermissions = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        if(!(searchViewModel is LocationPermission))
+        if (!(searchViewModel is LocationPermission)) {
             return@registerForActivityResult
-        if(permissions.entries.map { it.value }.reduce{ acc, item -> acc && item})
+        }
+        if (permissions.entries.map { it.value }.reduce { acc, item -> acc && item }) {
             (searchViewModel as LocationPermission).onSuccess()
-        else
+        } else {
             (searchViewModel as LocationPermission).onFailure()
+        }
     }
 
     private fun startLocationPermissionRequest() {
         requestMultiplePermissions.launch(
             arrayOf(
                 android.Manifest.permission.ACCESS_COARSE_LOCATION,
-                android.Manifest.permission.ACCESS_FINE_LOCATION,
+                android.Manifest.permission.ACCESS_FINE_LOCATION
             )
         )
     }
-
 }

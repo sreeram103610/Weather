@@ -2,24 +2,16 @@ package com.maadlabs.weather.search.ui.views
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredHeight
-import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Search
@@ -29,12 +21,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -42,11 +32,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -62,7 +49,6 @@ import com.maadlabs.weather.search.ui.views.Views.SearchView
 import com.maadlabs.weather.search.ui.views.Views.WeatherDetailsView
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.flowOf
 
 object Views {
 
@@ -73,18 +59,17 @@ object Views {
         const val SEARCHVIEW_TEMPERATURE_LOW = "TemperatureLow"
         const val SEARCHVIEW_CITY_NAME = "CityName"
     }
+
     @Composable
     fun SearchView(consumer: (UserEvent) -> Unit, state: StateFlow<SearchViewState>) {
-
         val viewState by state.collectAsStateWithLifecycle()
         var cityName by rememberSaveable { mutableStateOf("") }
 
-        Column(modifier = Modifier
-            .fillMaxSize()
-            ) {
-
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-
                 OutlinedTextField(
                     value = cityName,
                     onValueChange = { cityName = it },
@@ -94,10 +79,10 @@ object Views {
                         .fillMaxWidth()
                         .weight(1f)
                 )
-                IconButton(onClick =  { if(cityName.isNotBlank()) consumer(UserEvent.Search(cityName)) }) {
+                IconButton(onClick = { if (cityName.isNotBlank()) consumer(UserEvent.Search(cityName)) }) {
                     Icon(imageVector = Icons.Default.Search, stringResource(R.string.search))
                 }
-                IconButton(onClick =  { consumer(UserEvent.LocationSearch) }) {
+                IconButton(onClick = { consumer(UserEvent.LocationSearch) }) {
                     Icon(imageVector = Icons.Default.LocationOn, stringResource(R.string.location))
                 }
             }
@@ -120,10 +105,13 @@ object Views {
     @Composable
     fun ErrorView(consumer: (UserEvent) -> Unit) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.wrapContentHeight()) {
-            Text(text = stringResource(R.string.unknown_error_occured),)
-            Button(onClick = { consumer(UserEvent.Refresh) }, modifier = Modifier
-                .wrapContentHeight()
-                .padding(4.dp)) {
+            Text(text = stringResource(R.string.unknown_error_occured))
+            Button(
+                onClick = { consumer(UserEvent.Refresh) },
+                modifier = Modifier
+                    .wrapContentHeight()
+                    .padding(4.dp)
+            ) {
                 Text(text = stringResource(R.string.retry))
             }
         }
@@ -132,15 +120,15 @@ object Views {
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
     fun WeatherDetailsView(weatherScreenData: WeatherScreenData, consumer: (UserEvent) -> Unit) {
-
-        Row(modifier = Modifier
-            .combinedClickable(
-                onClick = { },
-                onLongClick = { consumer(UserEvent.Refresh) },
-            )
-            .padding(top = 16.dp, start = 16.dp)
-            .fillMaxWidth()
-            .testTag(TestTags.SEARCHVIEW_WEATHER_DETAILS),
+        Row(
+            modifier = Modifier
+                .combinedClickable(
+                    onClick = { },
+                    onLongClick = { consumer(UserEvent.Refresh) }
+                )
+                .padding(top = 16.dp, start = 16.dp)
+                .fillMaxWidth()
+                .testTag(TestTags.SEARCHVIEW_WEATHER_DETAILS),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             Column {

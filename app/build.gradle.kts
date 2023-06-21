@@ -5,9 +5,11 @@ plugins {
     kotlin("android")
     kotlin("kapt")
     id("com.google.dagger.hilt.android")
+    id("org.jlleitschuh.gradle.ktlint") version "11.4.0"
 }
 
-allprojects {
+subprojects {
+    apply(plugin = "org.jlleitschuh.gradle.ktlint") // Version should be inherited from parent
     android {
         buildFeatures {
             compose = true
@@ -33,7 +35,12 @@ android {
             useSupportLibrary = true
         }
     }
-
+    buildFeatures {
+        compose = true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.4.7"
+    }
     buildTypes {
         getByName("debug") {
             isMinifyEnabled = false
@@ -52,12 +59,10 @@ android {
         jvmTarget = "17"
     }
 
-
     kapt {
         correctErrorTypes = true
         showProcessorStats = true
     }
-
 
     fun Packaging.() {
         resources {
@@ -67,7 +72,6 @@ android {
         }
     }
 }
-
 
 dependencies {
     implementation(libs.androidx.ktx)
@@ -85,4 +89,3 @@ dependencies {
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
 }
-

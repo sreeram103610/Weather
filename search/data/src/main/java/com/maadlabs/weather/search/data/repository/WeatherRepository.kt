@@ -10,7 +10,7 @@ interface WeatherRepository {
     suspend fun getCurrentWeather(useCachedData: Boolean, location: LocationRepoData): RepoResult<WeatherRepoData, RepoErrorType>
 }
 
-internal class DefaultWeatherRepository @Inject constructor(val weatherApi: WeatherApi) : WeatherRepository{
+internal class DefaultWeatherRepository @Inject constructor(val weatherApi: WeatherApi) : WeatherRepository {
 
     override suspend fun getCurrentWeather(
         useCachedData: Boolean,
@@ -32,7 +32,7 @@ internal class DefaultWeatherRepository @Inject constructor(val weatherApi: Weat
         return weatherApi.currentWeatherNoCache(latitude = location.latitude, longitude = location.longitude).toRepoResult(::successMapper)
     }
 
-    private fun successMapper(data: WeatherSourceData) : WeatherRepoData {
+    private fun successMapper(data: WeatherSourceData): WeatherRepoData {
         return WeatherRepoData(
             data.locationName,
             data.mainData.temperature.toInt().toString(),
@@ -44,4 +44,3 @@ internal class DefaultWeatherRepository @Inject constructor(val weatherApi: Weat
 
     private fun String.toImageUrl() = "https://openweathermap.org/img/wn/$this@2x.png"
 }
-

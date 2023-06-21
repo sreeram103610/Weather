@@ -4,15 +4,21 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
-internal data class MainSourceData(@Json(name = "temp") val temperature: Float,
-                    @Json(name = "temp_min") val minTemperature: Float,
-                    @Json(name = "temp_max") val maxTemperature: Float)
+internal data class MainSourceData(
+    @Json(name = "temp") val temperature: Float,
+    @Json(name = "temp_min") val minTemperature: Float,
+    @Json(name = "temp_max") val maxTemperature: Float
+)
 
 @JsonClass(generateAdapter = true)
-internal data class ConditionData(@Json(name = "icon") val icon: String,
-@Json(name = "main") val condition: String?)
+internal data class ConditionData(
+    @Json(name = "icon") val icon: String,
+    @Json(name = "main") val condition: String?
+)
+
 @JsonClass(generateAdapter = true)
 internal data class WeatherSourceData(
     @Json(name = "name") val locationName: String,
     @Json(name = "main") val mainData: MainSourceData,
-    @Json(name = "weather") val weather: List<ConditionData>)
+    @Json(name = "weather") val weather: List<ConditionData>
+)

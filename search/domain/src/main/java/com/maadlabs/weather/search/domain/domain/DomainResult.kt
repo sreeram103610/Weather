@@ -1,19 +1,19 @@
 package com.maadlabs.weather.search.domain.domain
 
 sealed interface WeatherDomainResult {
-    object Loading: WeatherDomainResult
-    data class Error(val errorType: DomainError): WeatherDomainResult
+    object Loading : WeatherDomainResult
+    data class Error(val errorType: DomainError) : WeatherDomainResult
     data class WeatherData(
         val city: String,
         val weatherData: WeatherDomainData
-    ): WeatherDomainResult
+    ) : WeatherDomainResult
     data class WeatherDataForLocation(
         val weatherData: WeatherDomainData
-    ): WeatherDomainResult
+    ) : WeatherDomainResult
     data class RefreshedWeatherData(
         val city: String,
         val weatherData: WeatherDomainData
-    ): WeatherDomainResult
+    ) : WeatherDomainResult
     object Default : WeatherDomainResult
 }
 

@@ -14,21 +14,20 @@ internal interface GetWeatherForCityUsecase {
     operator fun invoke(search: String, useCache: Boolean): Flow<Result<WeatherDomainData>>
 }
 
-internal class DefaultGetWeatherForCityUsecase @Inject constructor(val repository: WeatherRepository): GetWeatherForCityUsecase {
+internal class DefaultGetWeatherForCityUsecase @Inject constructor(val repository: WeatherRepository) : GetWeatherForCityUsecase {
 
     override fun invoke(search: String, useCache: Boolean): Flow<Result<WeatherDomainData>> =
         flow<Result<WeatherDomainData>> {
             emit(repository.getCurrentWeather(useCache, search).toWeatherResult())
         }.apply {
             onEach {
-            println("REPO DATA - $it")
-         }
+                println("REPO DATA - $it")
+            }
         }
-
 }
 
 fun <E : RepoErrorType> RepoResult<WeatherRepoData, E>.toWeatherResult(): Result<WeatherDomainData> {
-    return when(this) {
+    return when (this) {
         is RepoResult.Available -> Result.success(this.repoData.toWeatherDomainData())
         is RepoResult.NotAvailable -> Result.failure(Throwable(this.error.toString()))
     }

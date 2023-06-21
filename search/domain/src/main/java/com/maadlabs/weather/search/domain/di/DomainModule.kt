@@ -12,13 +12,10 @@ import com.maadlabs.weather.search.domain.usecases.GetWeatherForLocationUsecase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.scopes.ActivityScoped
-import dagger.hilt.android.scopes.ViewModelScoped
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import javax.inject.Singleton
 
@@ -32,7 +29,7 @@ internal object DomainModule {
 
     @Provides
     @Singleton
-    internal fun cityWeatherUsecaseProvider(repo: WeatherRepository) : GetWeatherForCityUsecase = DefaultGetWeatherForCityUsecase(repo)
+    internal fun cityWeatherUsecaseProvider(repo: WeatherRepository): GetWeatherForCityUsecase = DefaultGetWeatherForCityUsecase(repo)
 
     @Provides
     @Singleton
@@ -45,7 +42,7 @@ internal object DomainModule {
         locationWeatherUsecase: GetWeatherForLocationUsecase,
         searchRepository: SearchRepository,
         locationRepository: LocationRepository
-    ) : WeatherInteractor {
+    ): WeatherInteractor {
         val defaultWeatherInteractor = DefaultWeatherInteractor(
             CoroutineScope(Job() + Dispatchers.IO),
             dispatcher,

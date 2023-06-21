@@ -11,30 +11,21 @@ import com.maadlabs.weather.search.domain.usecases.GetWeatherForCityUsecase
 import com.maadlabs.weather.search.domain.usecases.GetWeatherForLocationUsecase
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.WhileSubscribed
-import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.take
-import kotlinx.coroutines.flow.transformLatest
 import javax.inject.Inject
 
 interface WeatherInteractor {
@@ -78,7 +69,7 @@ internal class DefaultWeatherInteractor @Inject constructor(
     private val defaultFlow = _defaultFlow.flatMapLatest {
         searchRepository.getLastSearchIfPresent()
     }
-        .shareIn(scope= scope, started = SharingStarted.Eagerly, replay = 0)
+        .shareIn(scope = scope, started = SharingStarted.Eagerly, replay = 0)
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val _weatherData = merge(
@@ -106,18 +97,23 @@ internal class DefaultWeatherInteractor @Inject constructor(
                         }, {
                             WeatherDomainResult.Error(DomainError.NETWORK_ERROR)
                         })
-                    }.also { searchRepository.saveSearch(LocationRepoData(
-                        type.location.latitude,
-                        type.location.longitude
-                    )) }
+                    }.also {
+                        searchRepository.saveSearch(
+                            LocationRepoData(
+                                type.location.latitude,
+                                type.location.longitude
+                            )
+                        )
+                    }
                 }
 
                 Type.Refresh -> {
-                    val city: Type = cityFlow.replayCache.let{
-                        if (it.isNotEmpty() && it.first() is Search.City)
+                    val city: Type = cityFlow.replayCache.let {
+                        if (it.isNotEmpty() && it.first() is Search.City) {
                             it.first().toType()
-                        else
+                        } else {
                             searchRepository.getLastSearchIfPresent().first().toType()
+                        }
                     }
                     if (city is Type.City) {
                         cityWeatherUsecase(city.name, false).map { res ->
@@ -170,8 +166,9 @@ internal class DefaultWeatherInteractor @Inject constructor(
             is Search.City -> Type.City(name)
             is Search.Location -> if (location != null) {
                 Type.Location(LocationDomainData(location!!.latitude, location!!.longitude))
-            } else
+            } else {
                 Type.NoAction
+            }
 
             Search.Unavailable -> Type.NoAction
         }

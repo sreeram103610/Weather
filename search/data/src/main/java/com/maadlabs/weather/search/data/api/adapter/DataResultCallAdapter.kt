@@ -9,11 +9,11 @@ import retrofit2.Response
 import java.io.IOException
 import java.lang.reflect.Type
 
-
 internal class DataResultCall<R>(
     private val delegate: Call<R>,
-    private val successType: Type)
-    : Call<DataResult<R, ErrorResponse>> {
+    private val successType: Type
+) :
+    Call<DataResult<R, ErrorResponse>> {
     override fun enqueue(callback: Callback<DataResult<R, ErrorResponse>>) = delegate.enqueue(
         object : Callback<R> {
             override fun onResponse(call: Call<R>, response: Response<R>) {
@@ -21,13 +21,12 @@ internal class DataResultCall<R>(
             }
 
             override fun onFailure(call: Call<R>, t: Throwable) {
-                val response = when(t) {
+                val response = when (t) {
                     is IOException -> ErrorResponse.ServerError
                     else -> ErrorResponse.UnknownError
                 }
                 callback.onResponse(this@DataResultCall, Response.success(DataResult.Error(response)))
             }
-
         }
     )
 
@@ -44,15 +43,14 @@ internal class DataResultCall<R>(
     override fun request() = delegate.request()
 
     override fun timeout() = delegate.timeout()
-
 }
 
-private fun <T> Response<T>.toDataResult() : DataResult<T, ErrorResponse> {
+private fun <T> Response<T>.toDataResult(): DataResult<T, ErrorResponse> {
     val body = body()
     val code = code()
 
-    if(!isSuccessful || body == null) {
-        return when(code) {
+    if (!isSuccessful || body == null) {
+        return when (code) {
             500, 502, 503 -> DataResult.Error(ErrorResponse.ServerError)
             400, 404, 403, 401 -> DataResult.Error(ErrorResponse.NetworkError)
             else -> DataResult.Error(ErrorResponse.UnknownError)
@@ -60,7 +58,6 @@ private fun <T> Response<T>.toDataResult() : DataResult<T, ErrorResponse> {
     }
 
     return DataResult.Success(body)
-
 }
 
 internal class DataResultCallAdapter<R>(

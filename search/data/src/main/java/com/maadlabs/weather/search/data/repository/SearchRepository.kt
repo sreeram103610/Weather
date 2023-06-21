@@ -13,29 +13,30 @@ import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
 interface SearchRepository {
-    fun getLastSearchIfPresent() : Flow<Search>
+    fun getLastSearchIfPresent(): Flow<Search>
     suspend fun saveSearch(city: String)
     suspend fun saveSearch(locationRepoData: LocationRepoData)
 }
 
-internal class DefaultSearchRepository @Inject constructor(val settingsStore: DataStore<Preferences>): SearchRepository {
+internal class DefaultSearchRepository @Inject constructor(val settingsStore: DataStore<Preferences>) : SearchRepository {
 
     val locationMoshi = Moshi.Builder().build().adapter(LocationRepoData::class.java)
 
-    override fun getLastSearchIfPresent() : Flow<Search> {
+    override fun getLastSearchIfPresent(): Flow<Search> {
         println("GET LAST SEARCH")
         return settingsStore.data.map {
             println("SEARCH TYPE - " + it[SEARCH_TYPE])
             if (it[SEARCH_TYPE].equals(LOCATION_VALUE)) {
-                it[LAST_SEARCH].let { location -> if(location != null)
-                    Search.Location(locationMoshi.fromJson(location))
-                    else
+                it[LAST_SEARCH].let { location ->
+                    if (location != null) {
+                        Search.Location(locationMoshi.fromJson(location))
+                    } else {
                         Search.Unavailable
+                    }
                 }
             } else if (it[SEARCH_TYPE].equals(CITY_VALUE)) {
                 Search.City(it[LAST_SEARCH].orEmpty())
-            }
-            else {
+            } else {
                 Search.Unavailable
             }
         }.apply { onEach { println("Search last - " + it) } }
@@ -57,7 +58,6 @@ internal class DefaultSearchRepository @Inject constructor(val settingsStore: Da
         }
     }
 
-
     internal companion object {
         val LAST_SEARCH = stringPreferencesKey("last_search")
         val SEARCH_TYPE = stringPreferencesKey("search_type")
@@ -65,12 +65,10 @@ internal class DefaultSearchRepository @Inject constructor(val settingsStore: Da
         const val CITY_VALUE = "city_value"
         const val LOCATION_VALUE = "location_value"
     }
-
 }
 
 sealed interface Search {
     data class City(val name: String) : Search
-    data class Location(val location: LocationRepoData?): Search
-    object Unavailable: Search
+    data class Location(val location: LocationRepoData?) : Search
+    object Unavailable : Search
 }
-

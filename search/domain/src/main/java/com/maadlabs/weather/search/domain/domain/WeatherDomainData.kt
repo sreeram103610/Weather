@@ -7,4 +7,3 @@ data class WeatherDomainData(
     val maxTemperature: String,
     val imageUri: String
 )
-

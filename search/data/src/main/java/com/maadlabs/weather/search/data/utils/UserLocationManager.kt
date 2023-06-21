@@ -2,7 +2,6 @@ package com.maadlabs.weather.search.data.utils
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Application
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
@@ -16,13 +15,17 @@ import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.shareIn
 import java.util.concurrent.TimeUnit
 
 private const val TAG = "SharedLocationManager"
 
 class UserLocationManager constructor(
-    private val context: Context, externalScope: CoroutineScope
+    private val context: Context,
+    externalScope: CoroutineScope
 ) {
 
     private val fusedLocationClient: FusedLocationProviderClient =
@@ -49,7 +52,9 @@ class UserLocationManager constructor(
         }
 
         fusedLocationClient.requestLocationUpdates(
-            locationRequest, callback, Looper.getMainLooper()
+            locationRequest,
+            callback,
+            Looper.getMainLooper()
         ).addOnFailureListener { e ->
             close(e)
         }
@@ -58,14 +63,18 @@ class UserLocationManager constructor(
             fusedLocationClient.removeLocationUpdates(callback) // clean up when Flow collection ends
         }
     }.shareIn(
-        externalScope, replay = 0, started = SharingStarted.WhileSubscribed()
+        externalScope,
+        replay = 0,
+        started = SharingStarted.WhileSubscribed()
     )
 
     fun isLocationPermissionGranted(): Boolean {
-        return !(ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+        return !(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_DENIED ||
+                ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
                 == PackageManager.PERMISSION_DENIED
-                || ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
-                == PackageManager.PERMISSION_DENIED)
+            )
     }
 
     @ExperimentalCoroutinesApi
