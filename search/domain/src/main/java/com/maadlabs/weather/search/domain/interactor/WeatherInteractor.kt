@@ -14,15 +14,18 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.WhileSubscribed
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.take
@@ -61,15 +64,11 @@ internal class DefaultWeatherInteractor @Inject constructor(
     val locationRepository: LocationRepository
 ) : WeatherInteractor {
 
-    private val _citySearch = MutableSharedFlow<String>(extraBufferCapacity = 1)
+    private val _citySearch = MutableStateFlow<String>("")
 
-    private val cityFlow: StateFlow<Search> = _citySearch
+    private val cityFlow: Flow<Search> = _citySearch
+        .filter { it.isNotBlank() }
         .map { Search.City(it) }
-        .stateIn(
-            scope = scope,
-            started = SharingStarted.WhileSubscribed(),
-            initialValue = Search.Unavailable
-        )
 
     private val refreshFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 
@@ -123,13 +122,8 @@ internal class DefaultWeatherInteractor @Inject constructor(
                 }
 
                 Type.Refresh -> {
-                    val city: Type = cityFlow.replayCache.let {
-                        if (it.isNotEmpty() && it.first() is Search.City) {
-                            it.first().toType()
-                        } else {
-                            searchRepository.getLastSearchIfPresent().first().toType()
-                        }
-                    }
+
+                    val city = searchRepository.getLastSearchIfPresent().first().toType()
                     if (city is Type.City) {
                         cityWeatherUsecase(city.name, false).map { res ->
                             res.fold({
@@ -157,8 +151,7 @@ internal class DefaultWeatherInteractor @Inject constructor(
     }
 
     override fun getDefaultWeather() {
-        println("Default weather")
-        println(_defaultFlow.tryEmit(Unit))
+        _defaultFlow.tryEmit(Unit)
     }
 
     override fun getWeather(search: String, useCache: Boolean) {

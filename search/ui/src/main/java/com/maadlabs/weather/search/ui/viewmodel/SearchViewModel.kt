@@ -9,6 +9,8 @@ import androidx.lifecycle.viewModelScope
 import com.maadlabs.weather.search.domain.domain.WeatherDomainData
 import com.maadlabs.weather.search.domain.domain.WeatherDomainResult
 import com.maadlabs.weather.search.domain.interactor.WeatherInteractor
+import com.maadlabs.weather.search.ui.model.Actions
+import com.maadlabs.weather.search.ui.model.LocationPermission
 import com.maadlabs.weather.search.ui.model.SearchViewState
 import com.maadlabs.weather.search.ui.model.UserEvent
 import com.maadlabs.weather.search.ui.model.WeatherScreenData
@@ -22,6 +24,11 @@ import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
+/**
+ * Viewmodel that interacts with [WeatherInteractor] for
+ * getting weather states and uses [userEventsCallback]
+ * for receiving user events
+ */
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     app: Application,
@@ -72,11 +79,11 @@ class SearchViewModel @Inject constructor(
     fun isLocationPermissionGranted(): Boolean {
         val context = getApplication<Application>().applicationContext
         return !(
-            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_DENIED ||
-                ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
-                == PackageManager.PERMISSION_DENIED
-            )
+                ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+                        == PackageManager.PERMISSION_DENIED ||
+                        ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
+                        == PackageManager.PERMISSION_DENIED
+                )
     }
 }
 
@@ -88,11 +95,4 @@ private fun WeatherDomainData.toScreenData(): WeatherScreenData = WeatherScreenD
     imageUri = imageUri
 )
 
-sealed interface Actions {
-    object CheckLocationPermission : Actions
-}
 
-interface LocationPermission {
-    fun onSuccess()
-    fun onFailure()
-}

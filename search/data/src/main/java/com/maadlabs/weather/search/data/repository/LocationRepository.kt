@@ -6,6 +6,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
+/**
+ * Get location information for the user's
+ * current location
+ */
 interface LocationRepository {
     suspend fun getLocationUpdates(): Flow<LocationRepoData>
 }

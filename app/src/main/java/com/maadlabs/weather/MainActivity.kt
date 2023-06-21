@@ -6,8 +6,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
-import com.maadlabs.weather.search.ui.viewmodel.Actions
-import com.maadlabs.weather.search.ui.viewmodel.LocationPermission
+import com.maadlabs.weather.search.ui.model.Actions
+import com.maadlabs.weather.search.ui.model.LocationPermission
 import com.maadlabs.weather.search.ui.viewmodel.SearchViewModel
 import com.maadlabs.weather.search.ui.views.Views
 import com.maadlabs.weather.ui.theme.WeatherTheme
@@ -49,9 +49,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /**
-     *
-     */
+
     val requestMultiplePermissions = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
