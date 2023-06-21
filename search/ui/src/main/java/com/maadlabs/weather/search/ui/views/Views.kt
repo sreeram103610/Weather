@@ -129,7 +129,8 @@ object Views {
                 .padding(top = 16.dp, start = 16.dp)
                 .fillMaxWidth()
                 .testTag(TestTags.SEARCHVIEW_WEATHER_DETAILS),
-            horizontalArrangement = Arrangement.SpaceEvenly
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
                 Text(text = weatherScreenData.cityName, fontSize = 32.sp, fontStyle = FontStyle.Italic, modifier = Modifier.testTag(TestTags.SEARCHVIEW_CITY_NAME))
@@ -148,9 +149,9 @@ object Views {
             }
             Column {
                 Text(text = stringResource(R.string.low))
-                Text(text = weatherScreenData.minTemperature, fontSize = 64.sp, modifier = Modifier.testTag(TestTags.SEARCHVIEW_TEMPERATURE_LOW))
+                Text(text = weatherScreenData.minTemperature, fontSize = 48.sp, modifier = Modifier.testTag(TestTags.SEARCHVIEW_TEMPERATURE_LOW))
                 Text(text = stringResource(R.string.high))
-                Text(text = weatherScreenData.maxTemperature, fontSize = 64.sp, modifier = Modifier.testTag(TestTags.SEARCHVIEW_TEMPERATURE_HIGH))
+                Text(text = weatherScreenData.maxTemperature, fontSize = 48.sp, modifier = Modifier.testTag(TestTags.SEARCHVIEW_TEMPERATURE_HIGH))
             }
         }
     }

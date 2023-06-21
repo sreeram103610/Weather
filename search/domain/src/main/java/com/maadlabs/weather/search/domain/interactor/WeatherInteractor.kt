@@ -28,6 +28,10 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.take
 import javax.inject.Inject
 
+/**
+ * Interactor contract for use by ui to get weather info using
+ * [WeatherDomainResult] and send ui events
+ */
 interface WeatherInteractor {
     fun refreshWeather()
 
@@ -37,6 +41,17 @@ interface WeatherInteractor {
     fun getCurrentLocationWeather()
 }
 
+/**
+ * Interactor for sending weather states. The ui
+ * can subscribe to weatherData to receive states.
+ *
+ * @property scope - the scope for running parts of the weather flow
+ * @property dispatcher - the dispatcher to run the flow
+ * @property cityWeatherUsecase - Usecase to get the weather given a city
+ * @property locationWeatherUsecase - Usecase to get weather for current location
+ * @property searchRepository - repo to get recently search weather
+ * @property locationRepository - repo to get current location
+ */
 internal class DefaultWeatherInteractor @Inject constructor(
     val scope: CoroutineScope,
     val dispatcher: CoroutineDispatcher,
