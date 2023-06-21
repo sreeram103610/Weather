@@ -45,7 +45,6 @@ dependencies {
 
     implementation("androidx.core:core-ktx:1.10.1")
     implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("com.google.android.material:material:1.9.0")
     implementation(libs.hilt.android)
     implementation(libs.viewmodel)
     implementation(libs.bundles.compose)
@@ -55,6 +54,9 @@ dependencies {
 
     testImplementation(libs.kotlin.coroutines)
     testImplementation("junit:junit:4.13.2")
+    debugImplementation(libs.compose.debug.test)
+    debugImplementation(libs.compose.manifest.test)
+    androidTestImplementation(libs.compose.test)
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }

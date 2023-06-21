@@ -101,6 +101,7 @@ internal object DataModule {
 
             val url = originalHttpUrl.newBuilder()
                 .addQueryParameter("appid", BuildConfig.WEATHER_APP_KEY)
+                .addQueryParameter("units", "imperial")
                 .build()
             val requestBuilder: Request.Builder = original.newBuilder()
                 .url(url)

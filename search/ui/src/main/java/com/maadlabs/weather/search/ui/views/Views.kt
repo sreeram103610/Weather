@@ -1,5 +1,9 @@
 package com.maadlabs.weather.search.ui.views
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,6 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Search
@@ -26,6 +31,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
@@ -59,29 +66,39 @@ import kotlinx.coroutines.flow.flowOf
 
 object Views {
 
+    object TestTags {
+        const val SEARCHVIEW_WEATHER_DETAILS = "WeatherDetailsView"
+        const val SEARCHVIEW_TEMPERATURE = "Temperature"
+        const val SEARCHVIEW_TEMPERATURE_HIGH = "TemperatureHigh"
+        const val SEARCHVIEW_TEMPERATURE_LOW = "TemperatureLow"
+        const val SEARCHVIEW_CITY_NAME = "CityName"
+    }
     @Composable
     fun SearchView(consumer: (UserEvent) -> Unit, state: StateFlow<SearchViewState>) {
 
         val viewState by state.collectAsStateWithLifecycle()
         var cityName by rememberSaveable { mutableStateOf("") }
 
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier
+            .fillMaxSize()
+            ) {
 
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-
 
                 OutlinedTextField(
                     value = cityName,
                     onValueChange = { cityName = it },
-                    label = { Text("City", fontSize = 18.sp) },
+                    label = { Text(stringResource(R.string.city), fontSize = 18.sp) },
                     textStyle = TextStyle(fontSize = 24.sp),
-                    modifier = Modifier.fillMaxWidth().weight(1f)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
                 )
                 IconButton(onClick =  { if(cityName.isNotBlank()) consumer(UserEvent.Search(cityName)) }) {
-                    Icon(imageVector = Icons.Default.Search, "Search")
+                    Icon(imageVector = Icons.Default.Search, stringResource(R.string.search))
                 }
                 IconButton(onClick =  { consumer(UserEvent.LocationSearch) }) {
-                    Icon(imageVector = Icons.Default.LocationOn, "Location")
+                    Icon(imageVector = Icons.Default.LocationOn, stringResource(R.string.location))
                 }
             }
 
@@ -89,7 +106,10 @@ object Views {
                 is SearchViewState.Error -> ErrorView(consumer)
                 is SearchViewState.Loaded -> {
                     val screendata = (viewState as SearchViewState.Loaded).data
-                    WeatherDetailsView(weatherScreenData = screendata)
+                    WeatherDetailsView(weatherScreenData = screendata, consumer = consumer)
+                    LaunchedEffect(key1 = screendata) {
+                        cityName = screendata.cityName
+                    }
                 }
                 is SearchViewState.Loading -> CircularProgressIndicator(modifier = Modifier.size(64.dp))
                 else -> {}
@@ -100,25 +120,32 @@ object Views {
     @Composable
     fun ErrorView(consumer: (UserEvent) -> Unit) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.wrapContentHeight()) {
-            Text(text = "Unknown Error Occured",)
+            Text(text = stringResource(R.string.unknown_error_occured),)
             Button(onClick = { consumer(UserEvent.Refresh) }, modifier = Modifier
                 .wrapContentHeight()
                 .padding(4.dp)) {
-                Text(text = "RETRY")
+                Text(text = stringResource(R.string.retry))
             }
         }
     }
 
+    @OptIn(ExperimentalFoundationApi::class)
     @Composable
-    fun WeatherDetailsView(weatherScreenData: WeatherScreenData) {
+    fun WeatherDetailsView(weatherScreenData: WeatherScreenData, consumer: (UserEvent) -> Unit) {
 
         Row(modifier = Modifier
+            .combinedClickable(
+                onClick = { },
+                onLongClick = { consumer(UserEvent.Refresh) },
+            )
             .padding(top = 16.dp, start = 16.dp)
-            .fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
+            .fillMaxWidth()
+            .testTag(TestTags.SEARCHVIEW_WEATHER_DETAILS),
+            horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             Column {
-                Text(text = weatherScreenData.temperature, fontSize = 64.sp)
+                Text(text = weatherScreenData.cityName, fontSize = 32.sp, fontStyle = FontStyle.Italic, modifier = Modifier.testTag(TestTags.SEARCHVIEW_CITY_NAME))
+                Text(text = weatherScreenData.temperature, fontSize = 64.sp, modifier = Modifier.testTag(TestTags.SEARCHVIEW_TEMPERATURE))
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(weatherScreenData.imageUri)
@@ -132,15 +159,13 @@ object Views {
                 )
             }
             Column {
-                Text(text = weatherScreenData.cityName, fontSize = 32.sp, fontStyle = FontStyle.Italic)
-                Text(text = "Low")
-                Text(text = weatherScreenData.minTemperature, fontSize = 64.sp)
-                Text(text = "High")
-                Text(text = weatherScreenData.maxTemperature, fontSize = 64.sp)
+                Text(text = stringResource(R.string.low))
+                Text(text = weatherScreenData.minTemperature, fontSize = 64.sp, modifier = Modifier.testTag(TestTags.SEARCHVIEW_TEMPERATURE_LOW))
+                Text(text = stringResource(R.string.high))
+                Text(text = weatherScreenData.maxTemperature, fontSize = 64.sp, modifier = Modifier.testTag(TestTags.SEARCHVIEW_TEMPERATURE_HIGH))
             }
         }
     }
-
 }
 
 @Composable

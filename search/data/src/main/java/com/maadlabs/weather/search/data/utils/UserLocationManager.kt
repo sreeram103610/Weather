@@ -44,8 +44,9 @@ class UserLocationManager constructor(
             }
         }
 
-        if (isLocationPermissionGranted()
-        ) close()
+        if (!isLocationPermissionGranted()) {
+            close()
+        }
 
         fusedLocationClient.requestLocationUpdates(
             locationRequest, callback, Looper.getMainLooper()

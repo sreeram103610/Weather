@@ -19,6 +19,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
 import javax.inject.Singleton
 
 @Module
@@ -44,5 +45,15 @@ internal object DomainModule {
         locationWeatherUsecase: GetWeatherForLocationUsecase,
         searchRepository: SearchRepository,
         locationRepository: LocationRepository
-    ) : WeatherInteractor = DefaultWeatherInteractor(CoroutineScope(Dispatchers.IO), dispatcher, cityWeatherUsecase, locationWeatherUsecase, searchRepository, locationRepository)
+    ) : WeatherInteractor {
+        val defaultWeatherInteractor = DefaultWeatherInteractor(
+            CoroutineScope(Job() + Dispatchers.IO),
+            dispatcher,
+            cityWeatherUsecase,
+            locationWeatherUsecase,
+            searchRepository,
+            locationRepository
+        )
+        return defaultWeatherInteractor
+    }
 }

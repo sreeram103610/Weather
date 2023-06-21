@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
@@ -30,14 +31,14 @@ class SearchViewModel @Inject constructor(
     val weatherInteractor: WeatherInteractor
 ) : AndroidViewModel(app), LocationPermission {
 
-    init {
-        weatherInteractor.getDefaultWeather()
-    }
-
     private val _actions = MutableSharedFlow<Actions>(extraBufferCapacity = 1)
     val actions = _actions.shareIn(viewModelScope, SharingStarted.WhileSubscribed(), replay = 0)
 
-    val weatherScreenViewStateFlow: StateFlow<SearchViewState> = weatherInteractor.weatherData.map {
+    val weatherScreenViewStateFlow: StateFlow<SearchViewState> = weatherInteractor.weatherData
+        .onStart {
+            weatherInteractor.getDefaultWeather()
+        }
+        .map {
         when (it) {
             WeatherDomainResult.Default -> SearchViewState.Default
             is WeatherDomainResult.Error -> SearchViewState.Error
@@ -55,7 +56,8 @@ class SearchViewModel @Inject constructor(
     fun userEventsCallback(event: UserEvent) {
         when (event) {
             UserEvent.LocationSearch -> if(isLocationPermissionGranted())
-            { weatherInteractor.getCurrentLocationWeather()
+            {
+                weatherInteractor.getCurrentLocationWeather()
             }
             else {
                 _actions.tryEmit(Actions.CheckLocationPermission)

@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
@@ -82,7 +83,7 @@ class DefaultWeatherInteractorTest {
 
         val weatherDomainData = WeatherDomainData("Dayton", "22", "23", "26", "")
 
-        `when`(locationRepo.getLastLocation()).thenReturn(LocationRepoData("11", "12"))
+        `when`(locationRepo.getLocationUpdates()).thenReturn(flowOf(LocationRepoData("11", "12")))
         `when`(cityWeatherUsecase.invoke("Dayton", true)).thenReturn(flowOf(Result.success(weatherDomainData)))
         `when`(searchRepo.getLastSearchIfPresent()).thenReturn(flowOf(Search.City("Dayton")))
         `when`(locationWeatherUsecase.invoke(LocationDomainData("11","12"))).thenReturn(flowOf(Result.success(weatherDomainData)))
@@ -100,7 +101,7 @@ class DefaultWeatherInteractorTest {
 
         val weatherDomainData = WeatherDomainData("Dayton", "22", "23", "26", "")
 
-        `when`(locationRepo.getLastLocation()).thenReturn(LocationRepoData("11", "12"))
+        `when`(locationRepo.getLocationUpdates()).thenReturn(flowOf(LocationRepoData("11", "12")))
         `when`(cityWeatherUsecase.invoke("Dayton", true)).thenReturn(flowOf(Result.success(weatherDomainData)))
         `when`(searchRepo.getLastSearchIfPresent()).thenReturn(flowOf(Search.City("Dayton")))
         `when`(locationWeatherUsecase.invoke(LocationDomainData("11","12"))).thenReturn(flowOf(Result.success(weatherDomainData)))
@@ -118,7 +119,7 @@ class DefaultWeatherInteractorTest {
 
         val weatherDomainData = WeatherDomainData("Dayton", "22", "23", "26", "")
 
-        `when`(locationRepo.getLastLocation()).thenReturn(LocationRepoData("11", "12"))
+        `when`(locationRepo.getLocationUpdates()).thenReturn(flowOf(LocationRepoData("11", "12")))
         `when`(cityWeatherUsecase.invoke("Dayton", true)).thenReturn(flowOf(Result.success(weatherDomainData)))
         `when`(searchRepo.getLastSearchIfPresent()).thenReturn(flowOf(Search.City("Dayton")))
         `when`(locationWeatherUsecase.invoke(LocationDomainData("11","12"))).thenReturn(flowOf(Result.success(weatherDomainData)))
@@ -130,4 +131,6 @@ class DefaultWeatherInteractorTest {
             println(awaitItem())
         }
     }
+
+
 }

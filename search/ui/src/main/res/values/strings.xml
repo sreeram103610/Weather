@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="description">WeatherIcon\n</string>
+    <string name="search">Search</string>
+    <string name="location">Location</string>
+    <string name="unknown_error_occured">Unknown Error Occured</string>
+    <string name="low">Low</string>
+    <string name="high">High</string>
+    <string name="retry">RETRY</string>
+    <string name="city">City</string>
 </resources>

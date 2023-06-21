@@ -14,10 +14,19 @@ import com.maadlabs.weather.ui.theme.WeatherTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
+/**
+ *
+ */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+    /**
+     *
+     */
     val searchViewModel: SearchViewModel by viewModels()
+    /**
+     *
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -40,6 +49,9 @@ class MainActivity : ComponentActivity() {
 
     }
 
+    /**
+     *
+     */
     val requestMultiplePermissions = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->

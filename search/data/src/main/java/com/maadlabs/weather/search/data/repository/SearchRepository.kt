@@ -9,6 +9,7 @@ import com.squareup.moshi.Moshi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
 interface SearchRepository {
@@ -21,21 +22,32 @@ internal class DefaultSearchRepository @Inject constructor(val settingsStore: Da
 
     val locationMoshi = Moshi.Builder().build().adapter(LocationRepoData::class.java)
 
-    override fun getLastSearchIfPresent() =
-        settingsStore.data.map {
+    override fun getLastSearchIfPresent() : Flow<Search> {
+        println("GET LAST SEARCH")
+        return settingsStore.data.map {
+            println("SEARCH TYPE - " + it[SEARCH_TYPE])
             if (it[SEARCH_TYPE].equals(LOCATION_VALUE)) {
-                it[LAST_SEARCH]?.let { location -> Search.Location(locationMoshi.fromJson(location)) }
-            } else if (it[SEARCH_TYPE].equals(CITY_VALUE))
+                it[LAST_SEARCH].let { location -> if(location != null)
+                    Search.Location(locationMoshi.fromJson(location))
+                    else
+                        Search.Unavailable
+                }
+            } else if (it[SEARCH_TYPE].equals(CITY_VALUE)) {
                 Search.City(it[LAST_SEARCH].orEmpty())
-
-            Search.Unavailable
-        }.catch { Log.d("DataStore Error: ", it.message.toString()) }
+            }
+            else {
+                Search.Unavailable
+            }
+        }.apply { onEach { println("Search last - " + it) } }
+            .catch { Log.d("DataStore Error: ", it.message.toString()) }
+    }
 
     override suspend fun saveSearch(city: String) {
         settingsStore.edit {
             it[SEARCH_TYPE] = CITY_VALUE
             it[LAST_SEARCH] = city
         }
+        println("Search last save - ")
     }
 
     override suspend fun saveSearch(locationRepoData: LocationRepoData) {

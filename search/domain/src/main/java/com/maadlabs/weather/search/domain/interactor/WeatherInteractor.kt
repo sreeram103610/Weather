@@ -22,7 +22,9 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -31,12 +33,15 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.transformLatest
 import javax.inject.Inject
 
 interface WeatherInteractor {
     fun refreshWeather()
-    fun getWeather(search: String, useCache: Boolean)
+
     fun getDefaultWeather()
+    fun getWeather(search: String, useCache: Boolean)
     val weatherData: Flow<WeatherDomainResult>
     fun getCurrentLocationWeather()
 }
@@ -52,10 +57,7 @@ internal class DefaultWeatherInteractor @Inject constructor(
 
     private val _citySearch = MutableSharedFlow<String>(extraBufferCapacity = 1)
 
-    private val _defaultFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
-    val defaultFlow = _defaultFlow.flatMapLatest { searchRepository.getLastSearchIfPresent() }
-
-    val cityFlow: StateFlow<Search> = _citySearch
+    private val cityFlow: StateFlow<Search> = _citySearch
         .map { Search.City(it) }
         .stateIn(
             scope = scope,
@@ -67,12 +69,19 @@ internal class DefaultWeatherInteractor @Inject constructor(
 
     private val _locationFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 
-    val locationFlow = _locationFlow.map {
-        locationRepository.getLastLocation()
+    private val locationFlow = _locationFlow.flatMapLatest {
+        locationRepository.getLocationUpdates().take(1)
     }
 
+    private val _defaultFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+
+    private val defaultFlow = _defaultFlow.flatMapLatest {
+        searchRepository.getLastSearchIfPresent()
+    }
+        .shareIn(scope= scope, started = SharingStarted.Eagerly, replay = 0)
+
     @OptIn(ExperimentalCoroutinesApi::class)
-    val _weatherData = merge(
+    private val _weatherData = merge(
         cityFlow.map { it.toType() },
         locationFlow.map { Type.Location(LocationDomainData(it.latitude, it.longitude)) },
         refreshFlow.map { Type.Refresh },
@@ -104,7 +113,12 @@ internal class DefaultWeatherInteractor @Inject constructor(
                 }
 
                 Type.Refresh -> {
-                    val city = cityFlow.replayCache.first().toType()
+                    val city: Type = cityFlow.replayCache.let{
+                        if (it.isNotEmpty() && it.first() is Search.City)
+                            it.first().toType()
+                        else
+                            searchRepository.getLastSearchIfPresent().first().toType()
+                    }
                     if (city is Type.City) {
                         cityWeatherUsecase(city.name, false).map { res ->
                             res.fold({
@@ -131,12 +145,13 @@ internal class DefaultWeatherInteractor @Inject constructor(
         refreshFlow.tryEmit(Unit)
     }
 
-    override fun getWeather(search: String, useCache: Boolean) {
-        _citySearch.tryEmit(search)
+    override fun getDefaultWeather() {
+        println("Default weather")
+        println(_defaultFlow.tryEmit(Unit))
     }
 
-    override fun getDefaultWeather() {
-        _defaultFlow.tryEmit(Unit)
+    override fun getWeather(search: String, useCache: Boolean) {
+        _citySearch.tryEmit(search)
     }
 
     override fun getCurrentLocationWeather() {
