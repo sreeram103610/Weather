@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.tooling.preview.Preview
@@ -134,7 +135,7 @@ object Views {
         ) {
             Column {
                 Text(text = weatherScreenData.cityName, fontSize = 32.sp, fontStyle = FontStyle.Italic, modifier = Modifier.testTag(TestTags.SEARCHVIEW_CITY_NAME))
-                Text(text = weatherScreenData.temperature, fontSize = 64.sp, modifier = Modifier.testTag(TestTags.SEARCHVIEW_TEMPERATURE))
+                Text(text = "${weatherScreenData.temperature}F", fontSize = 64.sp, modifier = Modifier.testTag(TestTags.SEARCHVIEW_TEMPERATURE))
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(weatherScreenData.imageUri)
@@ -149,9 +150,9 @@ object Views {
             }
             Column {
                 Text(text = stringResource(R.string.low))
-                Text(text = weatherScreenData.minTemperature, fontSize = 48.sp, modifier = Modifier.testTag(TestTags.SEARCHVIEW_TEMPERATURE_LOW))
+                Text(text = "${weatherScreenData.minTemperature}F", fontSize = 48.sp, modifier = Modifier.testTag(TestTags.SEARCHVIEW_TEMPERATURE_LOW))
                 Text(text = stringResource(R.string.high))
-                Text(text = weatherScreenData.maxTemperature, fontSize = 48.sp, modifier = Modifier.testTag(TestTags.SEARCHVIEW_TEMPERATURE_HIGH))
+                Text(text = "${weatherScreenData.maxTemperature}F", fontSize = 48.sp, modifier = Modifier.testTag(TestTags.SEARCHVIEW_TEMPERATURE_HIGH))
             }
         }
     }

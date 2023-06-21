@@ -33,7 +33,7 @@ class DefaultWeatherRepositoryTest {
     @Test
     fun `check if successful response gives successful repo status`() = runTest {
         val data = WeatherSourceData("Dayton", MainSourceData(1f, 2f, 3f), listOf(ConditionData("", "")))
-        val dataRepo = WeatherRepoData("Dayton", "1", "2", "3", "")
+        val dataRepo = WeatherRepoData("Dayton", "1", "2", "3", "https://openweathermap.org/img/wn/@2x.png")
         val response = DataResult.Success(data)
         `when`(mockWeatherApi.currentWeatherNoCache("")).thenReturn(response)
         assertThat(repository.getCurrentWeather(false, "")).isEqualTo(RepoResult.Available(dataRepo))

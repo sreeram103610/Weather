@@ -8,6 +8,12 @@ import androidx.datastore.preferences.preferencesDataStoreFile
 import com.maadlabs.weather.search.data.BuildConfig
 import com.maadlabs.weather.search.data.api.WeatherApi
 import com.maadlabs.weather.search.data.api.adapter.DataResultCallAdapterFactory
+import com.maadlabs.weather.search.data.di.DataModule.Constants.APPID_KEY
+import com.maadlabs.weather.search.data.di.DataModule.Constants.CACHE_CONTROL
+import com.maadlabs.weather.search.data.di.DataModule.Constants.CACHE_DIR_NAME
+import com.maadlabs.weather.search.data.di.DataModule.Constants.SETTINGS
+import com.maadlabs.weather.search.data.di.DataModule.Constants.UNITS_KEY
+import com.maadlabs.weather.search.data.di.DataModule.Constants.UNITS_VALUE
 import com.maadlabs.weather.search.data.repository.DefaultLocationRepository
 import com.maadlabs.weather.search.data.repository.DefaultSearchRepository
 import com.maadlabs.weather.search.data.repository.DefaultWeatherRepository
@@ -36,6 +42,10 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 import java.io.File
 import javax.inject.Named
 import javax.inject.Singleton
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
+
+
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -84,7 +94,7 @@ internal object DataModule {
     ) =
         OkHttpClient.Builder()
             .addInterceptor(HttpLoggingInterceptor().apply { setLevel(HttpLoggingInterceptor.Level.BODY) })
-            .cache(Cache(directory = File(context.cacheDir, "okhttp_cache"), maxSize = 10 * 1024 * 1024))
+            .cache(Cache(directory = File(context.cacheDir, CACHE_DIR_NAME), maxSize = 10 * 1024 * 1024))
             .addInterceptor(apiInterceptor)
             .addNetworkInterceptor(cacheInterceptor)
             .build()
@@ -98,8 +108,8 @@ internal object DataModule {
             val originalHttpUrl: HttpUrl = original.url
 
             val url = originalHttpUrl.newBuilder()
-                .addQueryParameter("appid", BuildConfig.WEATHER_APP_KEY)
-                .addQueryParameter("units", "imperial")
+                .addQueryParameter(APPID_KEY, BuildConfig.WEATHER_APP_KEY)
+                .addQueryParameter(UNITS_KEY, UNITS_VALUE)
                 .build()
             val requestBuilder: Request.Builder = original.newBuilder()
                 .url(url)
@@ -116,16 +126,16 @@ internal object DataModule {
         override fun intercept(chain: Interceptor.Chain): Response {
             val response = chain.proceed(chain.request())
             if (Utils.isInternetAvailable(context)) {
-                val cacheDuration = 1 * 60 * 60
+                val cacheDuration = 15.minutes
                 return response.newBuilder().header(
-                    "Cache-Control",
+                    CACHE_CONTROL,
                     "public, max-age=$cacheDuration"
                 ).removeHeader("pragma")
                     .build()
             } else {
-                val maxStale = 4 * 24 * 60 * 60
+                val maxStale = 60.minutes
                 return response.newBuilder()
-                    .header("Cache-Control", "public, only-if-cached, max-stale=$maxStale")
+                    .header(CACHE_CONTROL, "public, only-if-cached, max-stale=$maxStale")
                     .build()
             }
         }
@@ -135,7 +145,22 @@ internal object DataModule {
     @Provides
     fun providePreferencesDataStore(@ApplicationContext appContext: Context): DataStore<Preferences> {
         return PreferenceDataStoreFactory.create(
-            produceFile = { appContext.preferencesDataStoreFile("settings") }
+            produceFile = { appContext.preferencesDataStoreFile(SETTINGS) }
         )
+    }
+
+    object Constants {
+        const val CACHE_CONTROL = "Cache-Control"
+
+        const val SETTINGS = "settings"
+
+        const val APPID_KEY = "appid"
+
+        const val UNITS_KEY = "units"
+
+        const val UNITS_VALUE = "imperial"
+
+        const val CACHE_DIR_NAME = "okhttp_cache"
+
     }
 }

@@ -23,8 +23,8 @@ class SearchScreenTest {
             Views.SearchView(consumer = {}, state = flow)
         }
 
-        composeTestRule.onNodeWithTag(Views.TestTags.SEARCHVIEW_TEMPERATURE).assertTextEquals(data.temperature)
-        composeTestRule.onNodeWithTag(Views.TestTags.SEARCHVIEW_TEMPERATURE_HIGH).assertTextEquals(data.maxTemperature)
-        composeTestRule.onNodeWithTag(Views.TestTags.SEARCHVIEW_TEMPERATURE_LOW).assertTextEquals(data.minTemperature)
+        composeTestRule.onNodeWithTag(Views.TestTags.SEARCHVIEW_TEMPERATURE, useUnmergedTree = true).assertTextEquals(data.temperature + "F")
+        composeTestRule.onNodeWithTag(Views.TestTags.SEARCHVIEW_TEMPERATURE_HIGH, useUnmergedTree = true).assertTextEquals(data.maxTemperature + "F")
+        composeTestRule.onNodeWithTag(Views.TestTags.SEARCHVIEW_TEMPERATURE_LOW, useUnmergedTree = true).assertTextEquals(data.minTemperature + "F")
     }
 }

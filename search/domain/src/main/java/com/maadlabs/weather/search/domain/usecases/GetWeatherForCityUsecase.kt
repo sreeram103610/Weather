@@ -19,10 +19,6 @@ internal class DefaultGetWeatherForCityUsecase @Inject constructor(val repositor
     override fun invoke(search: String, useCache: Boolean): Flow<Result<WeatherDomainData>> =
         flow<Result<WeatherDomainData>> {
             emit(repository.getCurrentWeather(useCache, search).toWeatherResult())
-        }.apply {
-            onEach {
-                println("REPO DATA - $it")
-            }
         }
 }
 

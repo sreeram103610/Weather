@@ -1,17 +1,23 @@
 package com.maadlabs.weather.search.domain.interactor
 
 import app.cash.turbine.test
+import com.google.common.truth.Truth
+import com.google.common.truth.Truth.assertThat
 import com.maadlabs.weather.search.data.repository.LocationRepoData
 import com.maadlabs.weather.search.data.repository.LocationRepository
 import com.maadlabs.weather.search.data.repository.Search
 import com.maadlabs.weather.search.data.repository.SearchRepository
 import com.maadlabs.weather.search.domain.domain.LocationDomainData
 import com.maadlabs.weather.search.domain.domain.WeatherDomainData
+import com.maadlabs.weather.search.domain.domain.WeatherDomainResult
 import com.maadlabs.weather.search.domain.usecases.GetWeatherForCityUsecase
 import com.maadlabs.weather.search.domain.usecases.GetWeatherForLocationUsecase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -71,11 +77,20 @@ class DefaultWeatherInteractorTest {
         `when`(searchRepo.getLastSearchIfPresent()).thenReturn(flowOf(Search.City("Dayton")))
         `when`(locationWeatherUsecase.invoke(LocationDomainData("11", "12"))).thenReturn(flowOf(Result.success(weatherDomainData)))
 
-        interactor.weatherData.test {
-            println(awaitItem())
-            interactor.getCurrentLocationWeather()
-            verify(locationWeatherUsecase, times(1)).invoke(LocationDomainData("11", "12"))
-            println(awaitItem())
+        interactor.weatherData
+            .stateIn(
+                scope = CoroutineScope(UnconfinedTestDispatcher()),
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = WeatherDomainResult.Default
+            )
+            .test {
+                assertThat(awaitItem()).isEqualTo(WeatherDomainResult.Default)
+                interactor.getCurrentLocationWeather()
+                verify(locationWeatherUsecase, times(1)).invoke(LocationDomainData("11", "12"))
+                assertThat(awaitItem()).isEqualTo(
+                    WeatherDomainResult.WeatherDataForLocation(
+                        weatherDomainData
+                    ))
         }
     }
 
@@ -88,11 +103,17 @@ class DefaultWeatherInteractorTest {
         `when`(searchRepo.getLastSearchIfPresent()).thenReturn(flowOf(Search.City("Dayton")))
         `when`(locationWeatherUsecase.invoke(LocationDomainData("11", "12"))).thenReturn(flowOf(Result.success(weatherDomainData)))
 
-        interactor.weatherData.test {
-            println(awaitItem())
-            interactor.getWeather("Dayton", true)
-            verify(cityWeatherUsecase, times(1)).invoke("Dayton", true)
-            println(awaitItem())
+        interactor.weatherData
+            .stateIn(
+                scope = CoroutineScope(UnconfinedTestDispatcher()),
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = WeatherDomainResult.Default
+            ).test {
+                assertThat(awaitItem()).isEqualTo(WeatherDomainResult.Default)
+                interactor.getWeather("Dayton", true)
+                verify(cityWeatherUsecase, times(1)).invoke("Dayton", true)
+                assertThat(awaitItem()).isEqualTo(
+                    WeatherDomainResult.WeatherData(city = "Dayton", weatherDomainData))
         }
     }
 
@@ -105,11 +126,17 @@ class DefaultWeatherInteractorTest {
         `when`(searchRepo.getLastSearchIfPresent()).thenReturn(flowOf(Search.City("Dayton")))
         `when`(locationWeatherUsecase.invoke(LocationDomainData("11", "12"))).thenReturn(flowOf(Result.success(weatherDomainData)))
 
-        interactor.weatherData.test {
-            println(awaitItem())
-            interactor.getDefaultWeather()
-            verify(searchRepo, times(1)).getLastSearchIfPresent()
-            println(awaitItem())
+        interactor.weatherData
+            .stateIn(
+                scope = CoroutineScope(UnconfinedTestDispatcher()),
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = WeatherDomainResult.Default
+            ).test {
+                assertThat(awaitItem()).isEqualTo(WeatherDomainResult.Default)
+                interactor.getDefaultWeather()
+                verify(searchRepo, times(1)).getLastSearchIfPresent()
+                assertThat(awaitItem()).isEqualTo(
+                    WeatherDomainResult.WeatherData(city = "Dayton", weatherDomainData))
         }
     }
 }

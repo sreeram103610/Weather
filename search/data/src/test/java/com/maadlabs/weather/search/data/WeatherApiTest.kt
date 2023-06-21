@@ -25,7 +25,6 @@ class WeatherApiTest {
     private lateinit var mockWebServer: MockWebServer
     private lateinit var weatherApi: WeatherApi
     private val client = OkHttpClient.Builder().addInterceptor(HttpLoggingInterceptor()).build()
-    private val contentType = "application/json".toMediaType()
 
     @Before
     fun setup() {

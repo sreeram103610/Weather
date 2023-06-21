@@ -23,9 +23,7 @@ internal class DefaultSearchRepository @Inject constructor(val settingsStore: Da
     val locationMoshi = Moshi.Builder().build().adapter(LocationRepoData::class.java)
 
     override fun getLastSearchIfPresent(): Flow<Search> {
-        println("GET LAST SEARCH")
         return settingsStore.data.map {
-            println("SEARCH TYPE - " + it[SEARCH_TYPE])
             if (it[SEARCH_TYPE].equals(LOCATION_VALUE)) {
                 it[LAST_SEARCH].let { location ->
                     if (location != null) {
@@ -39,8 +37,7 @@ internal class DefaultSearchRepository @Inject constructor(val settingsStore: Da
             } else {
                 Search.Unavailable
             }
-        }.apply { onEach { println("Search last - " + it) } }
-            .catch { Log.d("DataStore Error: ", it.message.toString()) }
+        }
     }
 
     override suspend fun saveSearch(city: String) {
@@ -48,7 +45,6 @@ internal class DefaultSearchRepository @Inject constructor(val settingsStore: Da
             it[SEARCH_TYPE] = CITY_VALUE
             it[LAST_SEARCH] = city
         }
-        println("Search last save - ")
     }
 
     override suspend fun saveSearch(locationRepoData: LocationRepoData) {
