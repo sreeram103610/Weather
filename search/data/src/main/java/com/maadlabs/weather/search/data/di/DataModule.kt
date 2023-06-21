@@ -11,6 +11,7 @@ import com.maadlabs.weather.search.data.api.adapter.DataResultCallAdapterFactory
 import com.maadlabs.weather.search.data.di.DataModule.Constants.APPID_KEY
 import com.maadlabs.weather.search.data.di.DataModule.Constants.CACHE_CONTROL
 import com.maadlabs.weather.search.data.di.DataModule.Constants.CACHE_DIR_NAME
+import com.maadlabs.weather.search.data.di.DataModule.Constants.CACHE_SIZE
 import com.maadlabs.weather.search.data.di.DataModule.Constants.SETTINGS
 import com.maadlabs.weather.search.data.di.DataModule.Constants.UNITS_KEY
 import com.maadlabs.weather.search.data.di.DataModule.Constants.UNITS_VALUE
@@ -94,7 +95,7 @@ internal object DataModule {
     ) =
         OkHttpClient.Builder()
             .addInterceptor(HttpLoggingInterceptor().apply { setLevel(HttpLoggingInterceptor.Level.BODY) })
-            .cache(Cache(directory = File(context.cacheDir, CACHE_DIR_NAME), maxSize = 10 * 1024 * 1024))
+            .cache(Cache(directory = File(context.cacheDir, CACHE_DIR_NAME), maxSize = CACHE_SIZE))
             .addInterceptor(apiInterceptor)
             .addNetworkInterceptor(cacheInterceptor)
             .build()
@@ -126,14 +127,14 @@ internal object DataModule {
         override fun intercept(chain: Interceptor.Chain): Response {
             val response = chain.proceed(chain.request())
             if (Utils.isInternetAvailable(context)) {
-                val cacheDuration = 15.minutes
+                val cacheDuration = 15.minutes.inWholeSeconds
                 return response.newBuilder().header(
                     CACHE_CONTROL,
                     "public, max-age=$cacheDuration"
                 ).removeHeader("pragma")
                     .build()
             } else {
-                val maxStale = 60.minutes
+                val maxStale = 60.minutes.inWholeSeconds
                 return response.newBuilder()
                     .header(CACHE_CONTROL, "public, only-if-cached, max-stale=$maxStale")
                     .build()
@@ -162,5 +163,6 @@ internal object DataModule {
 
         const val CACHE_DIR_NAME = "okhttp_cache"
 
+        const val CACHE_SIZE = 10 * 1024 * 1024L
     }
 }
