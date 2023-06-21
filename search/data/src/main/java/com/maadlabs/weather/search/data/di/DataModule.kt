@@ -11,6 +11,7 @@ import com.maadlabs.weather.search.data.api.adapter.DataResultCallAdapterFactory
 import com.maadlabs.weather.search.data.repository.DefaultLocationRepository
 import com.maadlabs.weather.search.data.repository.DefaultSearchRepository
 import com.maadlabs.weather.search.data.repository.DefaultWeatherRepository
+import com.maadlabs.weather.search.data.repository.LocationRepository
 import com.maadlabs.weather.search.data.repository.SearchRepository
 import com.maadlabs.weather.search.data.repository.WeatherRepository
 import com.maadlabs.weather.search.data.utils.UserLocationManager
@@ -51,12 +52,11 @@ internal object DataModule {
 
     @Provides
     @Singleton
-    internal fun locationManager(@ApplicationContext context: Context) = UserLocationManager(context, CoroutineScope(
-        Dispatchers.IO))
+    internal fun locationManager(@ApplicationContext context: Context) = UserLocationManager(context, CoroutineScope(Dispatchers.IO))
 
     @Provides
     @Singleton
-    internal fun locationRepo(locationManager: UserLocationManager) = DefaultLocationRepository(locationManager)
+    internal fun locationRepo(locationManager: UserLocationManager): LocationRepository = DefaultLocationRepository(locationManager)
 
     @Provides
     @Singleton
@@ -66,7 +66,7 @@ internal object DataModule {
     @Singleton
     internal fun retrofitProvider(client: OkHttpClient) =
         Retrofit.Builder()
-            .baseUrl("http://api.openweathermap.org/data/2.5/weather")
+            .baseUrl(BuildConfig.WEATHER_BASE_URL)
             .client(client)
             .addConverterFactory(MoshiConverterFactory.create())
             .addCallAdapterFactory(DataResultCallAdapterFactory())
@@ -84,7 +84,7 @@ internal object DataModule {
         @Named("ApiInterceptor") apiInterceptor: Interceptor
     ) =
         OkHttpClient.Builder()
-            .addInterceptor(HttpLoggingInterceptor())
+            .addInterceptor(HttpLoggingInterceptor().apply { setLevel(HttpLoggingInterceptor.Level.BODY) })
             .cache(Cache(directory = File(context.cacheDir, "okhttp_cache"), maxSize = 10 * 1024 * 1024))
             .addInterceptor(apiInterceptor)
             .addNetworkInterceptor(cacheInterceptor)
@@ -98,9 +98,6 @@ internal object DataModule {
 
             val original: Request = chain.request()
             val originalHttpUrl: HttpUrl = original.url
-
-            if (!originalHttpUrl.equals(BuildConfig.WEATHER_BASE_URL))
-                return chain.proceed(original)
 
             val url = originalHttpUrl.newBuilder()
                 .addQueryParameter("appid", BuildConfig.WEATHER_APP_KEY)

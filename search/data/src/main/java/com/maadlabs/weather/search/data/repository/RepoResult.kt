@@ -4,7 +4,6 @@ import com.maadlabs.weather.search.data.model.DataResult
 import com.maadlabs.weather.search.data.model.ErrorResponse
 
 sealed class RepoResult<out T, out E : RepoErrorType> {
-    object Loading : RepoResult<Nothing, Nothing>()
     data class Available<out T>(val repoData: T): RepoResult<T, Nothing>()
     data class NotAvailable<out E: RepoErrorType>(val error: RepoErrorType): RepoResult<Nothing, E>()
 }

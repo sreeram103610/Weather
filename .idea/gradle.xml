@@ -13,6 +13,8 @@
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/search" />
             <option value="$PROJECT_DIR$/search/data" />
+            <option value="$PROJECT_DIR$/search/domain" />
+            <option value="$PROJECT_DIR$/search/ui" />
           </set>
         </option>
       </GradleProjectSettings>

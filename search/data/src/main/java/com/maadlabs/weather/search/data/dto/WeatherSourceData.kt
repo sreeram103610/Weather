@@ -9,6 +9,10 @@ internal data class MainSourceData(@Json(name = "temp") val temperature: Float,
                     @Json(name = "temp_max") val maxTemperature: Float)
 
 @JsonClass(generateAdapter = true)
+internal data class ConditionData(@Json(name = "icon") val icon: String,
+@Json(name = "main") val condition: String?)
+@JsonClass(generateAdapter = true)
 internal data class WeatherSourceData(
     @Json(name = "name") val locationName: String,
-    @Json(name = "main") val mainData: MainSourceData, )
+    @Json(name = "main") val mainData: MainSourceData,
+    @Json(name = "weather") val weather: List<ConditionData>)

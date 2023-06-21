@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.squareup.moshi.Moshi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -13,21 +14,21 @@ import javax.inject.Inject
 interface SearchRepository {
     fun getLastSearchIfPresent() : Flow<Search>
     suspend fun saveSearch(city: String)
-    suspend fun saveSearch(latitude: String, longitude: String)
+    suspend fun saveSearch(locationRepoData: LocationRepoData)
 }
 
 internal class DefaultSearchRepository @Inject constructor(val settingsStore: DataStore<Preferences>): SearchRepository {
 
+    val locationMoshi = Moshi.Builder().build().adapter(LocationRepoData::class.java)
+
     override fun getLastSearchIfPresent() =
         settingsStore.data.map {
             if (it[SEARCH_TYPE].equals(LOCATION_VALUE)) {
-                val location =
-                    it[LAST_SEARCH]?.split(",")  // Stored in latitude,longitude format
-                Search.Location(location?.first().orEmpty(), location?.lastOrNull().orEmpty())
+                it[LAST_SEARCH]?.let { location -> Search.Location(locationMoshi.fromJson(location)) }
             } else if (it[SEARCH_TYPE].equals(CITY_VALUE))
                 Search.City(it[LAST_SEARCH].orEmpty())
-            else
-                Search.Unavailable
+
+            Search.Unavailable
         }.catch { Log.d("DataStore Error: ", it.message.toString()) }
 
     override suspend fun saveSearch(city: String) {
@@ -37,10 +38,10 @@ internal class DefaultSearchRepository @Inject constructor(val settingsStore: Da
         }
     }
 
-    override suspend fun saveSearch(latitude: String, longitude: String) {
+    override suspend fun saveSearch(locationRepoData: LocationRepoData) {
         settingsStore.edit {
             it[SEARCH_TYPE] = LOCATION_VALUE
-            it[LAST_SEARCH] = "$latitude,$longitude"
+            it[LAST_SEARCH] = locationMoshi.toJson(locationRepoData)
         }
     }
 
@@ -57,7 +58,7 @@ internal class DefaultSearchRepository @Inject constructor(val settingsStore: Da
 
 sealed interface Search {
     data class City(val name: String) : Search
-    data class Location(val latitude: String, val longitude: String): Search
+    data class Location(val location: LocationRepoData?): Search
     object Unavailable: Search
 }
 

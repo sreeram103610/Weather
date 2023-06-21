@@ -2,6 +2,7 @@ package com.maadlabs.weather.search.data.repository
 
 import com.google.common.truth.Truth.*
 import com.maadlabs.weather.search.data.api.WeatherApi
+import com.maadlabs.weather.search.data.dto.ConditionData
 import com.maadlabs.weather.search.data.dto.MainSourceData
 import com.maadlabs.weather.search.data.dto.WeatherSourceData
 import com.maadlabs.weather.search.data.model.DataResult
@@ -29,8 +30,8 @@ class DefaultWeatherRepositoryTest {
 
     @Test
     fun `check if successful response gives successful repo status`() = runTest {
-        val data = WeatherSourceData("Dayton", MainSourceData(1f,2f,3f))
-        val dataRepo = WeatherRepoData("Dayton", "1", "2", "3")
+        val data = WeatherSourceData("Dayton", MainSourceData(1f,2f,3f), listOf(ConditionData("", "")))
+        val dataRepo = WeatherRepoData("Dayton", "1", "2", "3", "")
         val response = DataResult.Success(data)
         `when`(mockWeatherApi.currentWeatherNoCache("")).thenReturn(response)
         assertThat(repository.getCurrentWeather(false, "")).isEqualTo(RepoResult.Available(dataRepo))

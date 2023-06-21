@@ -16,3 +16,5 @@ rootProject.name = "Weather"
 include ':app'
 include ':search'
 include ':search:data'
+include ':search:domain'
+include ':search:ui'

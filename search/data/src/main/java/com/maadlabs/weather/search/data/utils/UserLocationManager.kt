@@ -2,10 +2,12 @@ package com.maadlabs.weather.search.data.utils
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Application
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Looper
+import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -42,8 +44,7 @@ class UserLocationManager constructor(
             }
         }
 
-        if (context.checkCallingOrSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_DENIED
-            || context.checkCallingOrSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_DENIED
+        if (isLocationPermissionGranted()
         ) close()
 
         fusedLocationClient.requestLocationUpdates(
@@ -58,6 +59,13 @@ class UserLocationManager constructor(
     }.shareIn(
         externalScope, replay = 0, started = SharingStarted.WhileSubscribed()
     )
+
+    fun isLocationPermissionGranted(): Boolean {
+        return !(ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_DENIED
+                || ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
+                == PackageManager.PERMISSION_DENIED)
+    }
 
     @ExperimentalCoroutinesApi
     fun locationFlow(): Flow<Location> {

@@ -18,7 +18,7 @@ android {
     }
 
     defaultConfig {
-        val weatherBaseUrlKeyValue = "WEATHER_BASE_URL" to "\"http://api.openweathermap.org/data/2.5/weather\""
+        val weatherBaseUrlKeyValue = "WEATHER_BASE_URL" to "\"http://api.openweathermap.org/data/2.5/weather/\""
         val weatherAppKeyKeyValue = "WEATHER_APP_KEY" to "\"3caea5d148b0f43ec3f533f18acac961\""
 
         buildConfigField("String", weatherBaseUrlKeyValue.first, weatherBaseUrlKeyValue.second)
